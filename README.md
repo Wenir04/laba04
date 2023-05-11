@@ -1,193 +1,94 @@
-## Laboratory work III
+# laba3
+# Задание 1
 
-Данная лабораторная работа посвещена изучению систем автоматизации сборки проекта на примере **CMake**
-
-```sh
-$ open https://cmake.org/
+- [x] Вам поручили перейти на систему автоматизированной сборки CMake. Исходные файлы находятся в директории formatter_lib. В этой директории находятся файлы для статической библиотеки formatter. Создайте CMakeList.txt в директории formatter_lib, с помощью которого можно будет собирать статическую библиотеку formatter.
 ```
-
-## Tasks
-
-- [ ] 1. Создать публичный репозиторий с названием **lab03** на сервисе **GitHub**
-- [ ] 2. Ознакомиться со ссылками учебного материала
-- [ ] 3. Выполнить инструкцию учебного материала
-- [ ] 4. Составить отчет и отправить ссылку личным сообщением в **Slack**
-
-## Tutorial
-
-```sh
-$ export GITHUB_USERNAME=<имя_пользователя>
-```
-
-```sh
-$ cd ${GITHUB_USERNAME}/workspace
-$ pushd .
-$ source scripts/activate
-```
-
-```sh
-$ git clone https://github.com/${GITHUB_USERNAME}/lab02.git projects/lab03
-$ cd projects/lab03
-$ git remote remove origin
-$ git remote add origin https://github.com/${GITHUB_USERNAME}/lab03.git
-```
-
-```sh
-$ g++ -std=c++11 -I./include -c sources/print.cpp
-$ ls print.o
-$ nm print.o | grep print
-$ ar rvs print.a print.o
-$ file print.a
-$ g++ -std=c++11 -I./include -c examples/example1.cpp
-$ ls example1.o
-$ g++ example1.o print.a -o example1
-$ ./example1 && echo
-```
-
-```sh
-$ g++ -std=c++11 -I./include -c examples/example2.cpp
-$ nm example2.o
-$ g++ example2.o print.a -o example2
-$ ./example2
-$ cat log.txt && echo
-```
-
-```sh
-$ rm -rf example1.o example2.o print.o
-$ rm -rf print.a
-$ rm -rf example1 example2
-$ rm -rf log.txt
-```
-
-```sh
-$ cat > CMakeLists.txt <<EOF
-cmake_minimum_required(VERSION 3.4)
-project(print)
-EOF
-```
-
-```sh
-$ cat >> CMakeLists.txt <<EOF
-set(CMAKE_CXX_STANDARD 11)
+mkdir lab3 && cd laba3
+git clone https://github.com/tp-labs/lab03.git
+cd lab03
+git remote remove origin
+git remote add origin https://github.com/Wenir04/laba03.git
+cat > CMakeLists.txt <<EOF
+cmake_minimum_required(VERSION 3.10) 
+project(formatter) 
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_library(formatter STATIC \${CMAKE_CURRENT_SOURCE_DIR}/formatter.cpp)
+include_directories(\${CMAKE_CURRENT_SOURCE_DIR})
 EOF
+cmake -H. -B_build
+ls _build
 ```
 
-```sh
-$ cat >> CMakeLists.txt <<EOF
-add_library(print STATIC \${CMAKE_CURRENT_SOURCE_DIR}/sources/print.cpp)
+# Задание 2
+
+- [x] У компании "Formatter Inc." есть перспективная библиотека, которая является расширением предыдущей библиотеки. Т.к. вы уже овладели навыком созданием CMakeLists.txt для статической библиотеки formatter, ваш руководитель поручает заняться созданием CMakeLists.txt для библиотеки formatter_ex, которая в свою очередь использует библиотеку formatter.
+```
+cd formatter_ex_lib
+cat > CMakeLists.txt <<EOF
+cmake_minimum_required(VERSION 3.10)
+project(formatter_ex)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CURRENT_SOURCE_DIR /Home//artem/lab3/lab03)
+add_library(formatter_ex STATIC \${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex.cpp)
+include_directories(\${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(\${CMAKE_CURRENT_SOURCE_DIR}/formatter_lib)
+target_link_libraries(formatter_ex formatter)
 EOF
+cmake -H. -B_build
+ls ls _build
 ```
 
-```sh
-$ cat >> CMakeLists.txt <<EOF
-include_directories(\${CMAKE_CURRENT_SOURCE_DIR}/include)
-EOF
-```
+# Задание 3
 
-```sh
+- [x] Конечно же ваша компания предоставляет примеры использования своих библиотек. Чтобы продемонстрировать как работать с библиотекой formatter_ex, вам необходимо создать два CMakeList.txt для двух простых приложений:
+
+    hello_world, которое использует библиотеку formatter_ex;
+    solver, приложение которое испольует статические библиотеки formatter_ex и solver_lib.
+    
+    
+ ```
+ cd hello_world_application
+cat > CMakeLists.txt <<EOF
+cmake_minimum_required(VERSION 3.10)
+project(hello_world)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CURRENT_SOURCE_DIR /Home//artem/lab3/lab3)
+add_executable(hello_world \${CMAKE_CURRENT_SOURCE_DIR}/hello_world_application/hello_world.cpp)
+include_directories(\${CMAKE_CURRENT_SOURCE_DIR}/formatter_lib \${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex_lib)
+find_library(formatter NAMES libformatter.a PATHS \${CMAKE_CURRENT_SOURCE_DIR}/formatter_lib)
+find_library(formatter_ex NAMES libformatter_ex.a PATHS \${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex_lib)
+target_link_libraries(hello_world \${formatter} \${formatter_ex})
+EOF
+
+cmake -H. -B_build
+_build/hello_world &&
+$ cd solver_application
+$ cat > CMakeLists.txt <<EOF
+cmake_minimum_required(VERSION 3.10)
+project(solver)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CURRENT_SOURCE_DIR /Home//artem/lab3/lab3)
+add_library(solver_lib STATIC \${CMAKE_CURRENT_SOURCE_DIR}/solver_lib/solver.cpp)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/solver_lib ${CMAKE_CURRENT_SOURCE_DIR}/formatter_lib ${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex_lib)
 $ cmake -H. -B_build
-$ cmake --build _build
-```
-
-```sh
 $ cat >> CMakeLists.txt <<EOF
-
-add_executable(example1 \${CMAKE_CURRENT_SOURCE_DIR}/examples/example1.cpp)
-add_executable(example2 \${CMAKE_CURRENT_SOURCE_DIR}/examples/example2.cpp)
+add_executable(solver \${CMAKE_CURRENT_SOURCE_DIR}/solver_application/equation.cpp)
+find_library(formatter NAMES libformatter.a PATHS \${CMAKE_CURRENT_SOURCE_DIR}/formatter_lib)
+find_library(formatter_ex NAMES libformatter_ex.a PATHS \${CMAKE_CURRENT_SOURCE_DIR}/formatter_ex_lib)
+find_library(solver_lib NAMES libsolver_lib.a PATHS \${CMAKE_CURRENT_SOURCE_DIR}/solver_lib)
+target_link_libraries(solver \${formatter} \${formatter_ex} \${solver_lib})
 EOF
+
+$ cmake -H. -B_build
+$ cmake --build _build # Сборка всего проекта
+$ cmake --build _build --target solver_lib 
+$ cmake --build _build --target solver 
+$ _build/solver && echo
 ```
+![изображение](https://github.com/Wenir04/laba3/assets/113133600/0ac4427b-fb99-45c9-bc0f-7ec5e16f448f)
+![изображение](https://github.com/Wenir04/laba3/assets/113133600/8d3f0d5a-0d63-411a-8f0a-e3e9355cc508)
 
-```sh
-$ cat >> CMakeLists.txt <<EOF
-
-target_link_libraries(example1 print)
-target_link_libraries(example2 print)
-EOF
-```
-
-```sh
-$ cmake --build _build
-$ cmake --build _build --target print
-$ cmake --build _build --target example1
-$ cmake --build _build --target example2
-```
-
-```sh
-$ ls -la _build/libprint.a
-$ _build/example1 && echo
-hello
-$ _build/example2
-$ cat log.txt && echo
-hello
-$ rm -rf log.txt
-```
-
-```sh
-$ git clone https://github.com/tp-labs/lab03 tmp
-$ mv -f tmp/CMakeLists.txt .
-$ rm -rf tmp
-```
-
-```sh
-$ cat CMakeLists.txt
-$ cmake -H. -B_build -DCMAKE_INSTALL_PREFIX=_install
-$ cmake --build _build --target install
-$ tree _install
-```
-
-```sh
-$ git add CMakeLists.txt
-$ git commit -m"added CMakeLists.txt"
-$ git push origin master
-```
-
-## Report
-
-```sh
-$ popd
-$ export LAB_NUMBER=03
-$ git clone https://github.com/tp-labs/lab${LAB_NUMBER} tasks/lab${LAB_NUMBER}
-$ mkdir reports/lab${LAB_NUMBER}
-$ cp tasks/lab${LAB_NUMBER}/README.md reports/lab${LAB_NUMBER}/REPORT.md
-$ cd reports/lab${LAB_NUMBER}
-$ edit REPORT.md
-$ gist REPORT.md
-```
-
-## Homework
-
-Представьте, что вы стажер в компании "Formatter Inc.".
-### Задание 1
-Вам поручили перейти на систему автоматизированной сборки **CMake**.
-Исходные файлы находятся в директории [formatter_lib](formatter_lib).
-В этой директории находятся файлы для статической библиотеки *formatter*.
-Создайте `CMakeList.txt` в директории [formatter_lib](formatter_lib),
-с помощью которого можно будет собирать статическую библиотеку *formatter*.
-
-### Задание 2
-У компании "Formatter Inc." есть перспективная библиотека,
-которая является расширением предыдущей библиотеки. Т.к. вы уже овладели
-навыком созданием `CMakeList.txt` для статической библиотеки *formatter*, ваш 
-руководитель поручает заняться созданием `CMakeList.txt` для библиотеки 
-*formatter_ex*, которая в свою очередь использует библиотеку *formatter*.
-
-### Задание 3
-Конечно же ваша компания предоставляет примеры использования своих библиотек.
-Чтобы продемонстрировать как работать с библиотекой *formatter_ex*,
-вам необходимо создать два `CMakeList.txt` для двух простых приложений:
-* *hello_world*, которое использует библиотеку *formatter_ex*;
-* *solver*, приложение которое испольует статические библиотеки *formatter_ex* и *solver_lib*.
-
-**Удачной стажировки!**
-
-## Links
-- [Основы сборки проектов на С/C++ при помощи CMake](https://eax.me/cmake/)
-- [CMake Tutorial](http://neerc.ifmo.ru/wiki/index.php?title=CMake_Tutorial)
-- [C++ Tutorial - make & CMake](https://www.bogotobogo.com/cplusplus/make.php)
-- [Autotools](http://www.gnu.org/software/automake/manual/html_node/Autotools-Introduction.html)
-- [CMake](https://cgold.readthedocs.io/en/latest/index.html)
-
-```
-Copyright (c) 2015-2021 The ISC Authors
-```
