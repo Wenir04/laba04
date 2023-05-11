@@ -48,3 +48,4 @@ git add .github
 git commit -m "added CI.yml"
 git push origin main
 ```
+![изображение](https://github.com/Wenir04/laba04/assets/113133600/de634dcd-c52e-4922-8a86-8e65b4513be3)
